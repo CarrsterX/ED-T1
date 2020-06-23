@@ -84,7 +84,7 @@ def main():
                 data=data[[option, 'lat', 'lon']],
                 get_position=["lon", "lat"],
                 auto_highlight=True,
-                radius=400,
+                radius=100,
                 extruded=True,
                 pickable=True,
                 elevation_scale=3,
