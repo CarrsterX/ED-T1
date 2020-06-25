@@ -1,6 +1,7 @@
 import requests
 import json
 import streamlit as st
+import json
 import pandas as pd
 import unicodedata
 import numpy as np
@@ -10,21 +11,22 @@ import matplotlib
 #matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import numpy as np
+ 
 
 def strip_accents(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s)
-    if unicodedata.category(c) != 'Mn')
+        if unicodedata.category(c) != 'Mn')
 
 @st.cache(persist=True)
 def load_data(values,api_key):
     response = requests.get('https://api.desarrolladores.energiaabierta.cl/bencina-en-linea/v1/combustibles/vehicular/estaciones.json/?auth_key='+api_key)
-    if response.status_code==200:##consulta si obtiene una respuesta de la api
+    if response.status_code==200:
         s=json.loads(response.text,encoding='utf-8',strict=False)
         data=pd.DataFrame(s['data'],columns=s['headers'])
         lowercase = lambda x: str(x).lower().replace(' ', '_')
-        data.rename(lowercase, axis="columns", inplace=True)##cambia todo a minusculas
-        data.rename(strip_accents, axis="columns", inplace=True)##quita todos los acentos 
+        data.rename(lowercase, axis="columns", inplace=True)
+        data.rename(strip_accents, axis="columns", inplace=True)
         data.rename(columns={
             'latitud':'lat',
             'longitud':'lon',
@@ -53,62 +55,57 @@ def main():
     val=['gasolina_93','gasolina_97','gasolina_95','petroleo_diesel']
     data=load_data(val,api_key)
 
-    ##titulo inicial de la pagina
     st.title("Precios de Combustibles")
 
-    ## Comienzo de las 3 etapas de la pagina
-    if data is not None:##consulta si existen datos
+
+    if data is not None:
         scaler = lambda x : (x-x.min())/(x.max()-x.min())
         data.to_csv('precios_bencinas.csv')
         st.markdown("Esta es una aplicacion web para monitorear precios de combustibles")
 
-        option = st.selectbox('Que tipo de combustible desea revisar?',val)#llamada al creador de la casilla de seleccion
+        option = st.selectbox('Que tipo de combustible desea revisar?',val)
         st.write('You selected:', option)
         sns.catplot(x="id_region", y=option, kind="bar", data=data)
-        st.pyplot()##llamdo de streamlit hacia pyplot para generar la grafica 
+        st.pyplot()
 
-        st.write('Mapa representarivo de geolocalizacion de vencineras\n')
-        midpoint = (-20.25879, -70.13311)#situa el mapa en la primera region a trabajar 
-        ##generador del mapa
+
+        midpoint = (-35.4264, -71.65542)
         r=pdk.Deck(
-        map_style="mapbox://styles/mapbox/light-v9",##selecciona el formato del mapa
-        initial_view_state={##selecciona vista inicial del mapa
-            "latitude": midpoint[0],
-            "longitude": midpoint[1],
-            "zoom": 10,
-            "pitch": 50,
-        },
-        layers=[##genera una capa para agregar figuras o popup en el mapa
-            pdk.Layer(
-            "HexagonLayer",
-            data=data[[option, 'lat', 'lon']],##obtiene la longitud y latitud de cada vencinera
-            get_position=["lon", "lat"],##situa la generacion en la ubicacion obtenida antes 
-            auto_highlight=True,
-            radius=400,##radio del objeto generado
-            extruded=True,##genera elevacion
-            pickable=True,
-            elevation_scale=3,
-            elevation_range=[0, 2000],
-            )
-        ],
-        tooltip=True
+            map_style="mapbox://styles/mapbox/light-v9",
+            initial_view_state={
+                "latitude": midpoint[0],
+                "longitude": midpoint[1],
+                "zoom": 12,
+                "pitch": 50,
+            },
+            layers=[
+                pdk.Layer(
+                "HexagonLayer",
+                data=data[[option, 'lat', 'lon']],
+                get_position=["lon", "lat"],
+                auto_highlight=True,
+                radius=400,
+                extruded=True,
+                pickable=True,
+                elevation_scale=3,
+                elevation_range=[0, 2000],
+                ),
+            ],
+            tooltip=True
         )
-        st.write(r)##escribe el mapa con su respectivos objetos en la pagina
+        st.write(r)
 
-        ##top de precios (al final de la pagina)
         st.header("Top 5 Precios")
         values = np.unique(data['id_region'].cat.categories)
         options = np.unique(data['region'].cat.categories)
 
-        region = st.selectbox('Seleccione region', options)
+        region = st.selectbox('Seleccione region',  options)
         st.bar_chart(data.loc[data['region']==region][val].sort_values(by=[option], ascending=False)[:5])
         #if st.checkbox("Show raw data", False):
-        # st.write(data)
+        #    st.write(data)
 
     else:
-        ##mensaje en el caso de que los datos no sean cargados
         st.markdown("Esta aplicacion no esta disponible en este momento")
 
-##inicio del programa
 if __name__ == '__main__':
-    main()##llamado a la funcion contenedora
+	main()
