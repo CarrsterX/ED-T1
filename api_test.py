@@ -47,6 +47,12 @@ def load_data(values,api_key):
         data['region'] = data['region'].astype('category')
         data['id_region'] = data['id_region'].astype('category')
     return data
+def data_01(datos):
+    ##separasion de los datos 
+    ##para implementacion sensilla
+    
+    return renew_data
+
 
 def main():
     api_key='02f23d8e1dd050539725ce70b158e81bf6416cec'
@@ -58,15 +64,24 @@ def main():
 
     ## Comienzo de las 3 etapas de la pagina
     if data is not None:##consulta si existen datos
-        scaler = lambda x : (x-x.min())/(x.max()-x.min())
-        data.to_csv('precios_bencinas.csv')
+        
+        # print(data)
+        # {{observacion}} #
+        ## la variable data que almacena los datos es un diccionario 
+        ## por ende los datos de acceden mediante las llaves
+
+        renew_data = data_01(data)#funcion feneradora de los datos de la region 01
+        
+        data.to_csv('precios_bencinas.csv')#guarda los datos en un archivo 
         st.markdown("Esta es una aplicacion web para monitorear precios de combustibles")
 
         option = st.selectbox('Que tipo de combustible desea revisar?',val)#llamada al creador de la casilla de seleccion
         st.write('You selected:', option)
         sns.catplot(x="id_region", y=option, kind="bar", data=data)
         st.pyplot()##llamdo de streamlit hacia pyplot para generar la grafica 
+        #fin de la generacion de la grafica
 
+        #comienzo del mapa
         st.write('Mapa representarivo de geolocalizacion de vencineras\n')
         midpoint = (-20.25879, -70.13311)#situa el mapa en la primera region a trabajar 
         ##generador del mapa
@@ -75,7 +90,7 @@ def main():
         initial_view_state={##selecciona vista inicial del mapa
             "latitude": midpoint[0],
             "longitude": midpoint[1],
-            "zoom": 10,
+            "zoom": 13,
             "pitch": 50,
         },
         layers=[##genera una capa para agregar figuras o popup en el mapa
@@ -84,16 +99,29 @@ def main():
             data=data[[option, 'lat', 'lon']],##obtiene la longitud y latitud de cada vencinera
             get_position=["lon", "lat"],##situa la generacion en la ubicacion obtenida antes 
             auto_highlight=True,
-            radius=400,##radio del objeto generado
-            extruded=True,##genera elevacion
-            pickable=True,
-            elevation_scale=3,
-            elevation_range=[0, 2000],
+            radius=100,##radio del objeto generado
+            extruded=True,
+            pickable=True
+            ),
+
+            ##nuevo layer que permite la generacion de lineas 
+            pdk.Layer(#las lineas se generan con un inicio y fin 
+            "LineLayer",
+            data=data[['lat', 'lon']],
+            get_source_position=[-20.25879,-70.13311],
+            get_target_position=[-20.21334,-70.14856],  
+            picking_radius=8,
+            get_width=10,
+            get_color=255,
+            highlight_color=[255, 255, 0],
+            auto_highlight=True,
+            pickable=True, 
             )
         ],
         tooltip=True
         )
         st.write(r)##escribe el mapa con su respectivos objetos en la pagina
+        #fin del mapa
 
         ##top de precios (al final de la pagina)
         st.header("Top 5 Precios")
@@ -102,8 +130,8 @@ def main():
 
         region = st.selectbox('Seleccione region', options)
         st.bar_chart(data.loc[data['region']==region][val].sort_values(by=[option], ascending=False)[:5])
-        #if st.checkbox("Show raw data", False):
-        # st.write(data)
+
+        #fin del top 5 precios
 
     else:
         ##mensaje en el caso de que los datos no sean cargados
