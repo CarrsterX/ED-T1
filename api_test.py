@@ -62,8 +62,12 @@ def main():
     if data is not None:##consulta si existen datos
         
         tarapaca = pd.read_csv('vr1.csv')
-        tarapaca.set_index(["id"], inplace=True)
-        print(tarapaca)
+        tarapaca.set_index(['id'], inplace=True)
+        G = nx.complete_graph(26)
+        print(G.nodes())
+        print(G.edges())
+        nx.draw(G)
+        plt.show()
 
 
         data.to_csv('precios_bencinas.csv')#guarda los datos en un archivo 
