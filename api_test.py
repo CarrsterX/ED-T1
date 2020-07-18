@@ -11,6 +11,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import networkx as nx
+from haversine import haversine
 
 
 def strip_accents(s):
@@ -63,7 +64,8 @@ def main():
         
         tarapaca = pd.read_csv('vr1.csv')
         tarapaca.set_index(['id'], inplace=True)
-        
+        lon = tarapaca['lon']
+        lat = tarapaca['lat']
         H = nx.Graph()
 
         aux = 1
@@ -75,22 +77,21 @@ def main():
         while(i<26):
             j=i+1
             while(j<27):
+                #administrar datos para obtener peso 
 
+                p1 = (lon[i-1],lat[i-1])
+                p2 = (lon[j-1],lat[j-1])
 
+                dist = haversine(p1,p2)
 
-
-                
-                H.add_edge(i,j)
+                H.add_edge(i,j, weight = dist)
                 j+=1
-
             i+=1
-        print(H.edges())
 
+        print(H.get_edge_data(1,2))
         print('\n\n')
-        
-       
-        nx.draw(H)
-        plt.show()
+        #nx.draw(H)
+        #plt.show()
         
         
         #print(tarapaca)
