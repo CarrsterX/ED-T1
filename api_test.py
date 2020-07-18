@@ -13,12 +13,12 @@ import seaborn as sns
 import networkx as nx
 from haversine import haversine
 
-
 def strip_accents(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s)
     if unicodedata.category(c) != 'Mn')
 
 @st.cache(persist=True)
+
 def load_data(values,api_key):
     response = requests.get('https://api.desarrolladores.energiaabierta.cl/bencina-en-linea/v1/combustibles/vehicular/estaciones.json/?auth_key='+api_key)
     if response.status_code==200:##consulta si obtiene una respuesta de la api
@@ -50,6 +50,37 @@ def load_data(values,api_key):
         data['id_region'] = data['id_region'].astype('category')
     return data
 
+def grafo(): #Funcion que inicia la creacion del grafo        
+    tarapaca = pd.read_csv('vr1.csv')
+    tarapaca.set_index(['id'], inplace=True)
+    lon = tarapaca['lon']
+    lat = tarapaca['lat']
+    H = nx.Graph()
+
+    aux = 1
+    while(aux<27):
+        H.add_node(aux)
+        aux+=1       
+        i = 1
+        
+        while(i<26):
+            j=i+1
+            
+            while(j<27):
+                #administrar datos para obtener peso 
+                p1 = (lon[i-1],lat[i-1])
+                p2 = (lon[j-1],lat[j-1])
+
+                dist = haversine(p1,p2)
+
+                H.add_edge(i,j, weight = dist)
+                j+=1
+            i+=1
+    nx.draw(H)
+    plt.show()
+
+def AMB():# Codigo Arbol minimo de busqueda
+    print('No hay nada')
 
 def main():
     api_key='02f23d8e1dd050539725ce70b158e81bf6416cec'
@@ -62,40 +93,9 @@ def main():
     ## Comienzo de las 3 etapas de la pagina
     if data is not None:##consulta si existen datos
         
-        tarapaca = pd.read_csv('vr1.csv')
-        tarapaca.set_index(['id'], inplace=True)
-        lon = tarapaca['lon']
-        lat = tarapaca['lat']
-        H = nx.Graph()
+        grafo()#LLama a la funcion Grafo
 
-        aux = 1
-        while(aux<27):
-            H.add_node(aux)
-            aux+=1
-        #print(H.nodes())        
-        i = 1
-        while(i<26):
-            j=i+1
-            while(j<27):
-                #administrar datos para obtener peso 
-
-                p1 = (lon[i-1],lat[i-1])
-                p2 = (lon[j-1],lat[j-1])
-
-                dist = haversine(p1,p2)
-
-                H.add_edge(i,j, weight = dist)
-                j+=1
-            i+=1
-
-        print(H.get_edge_data(1,2))
-        print('\n\n')
-        #nx.draw(H)
-        #plt.show()
-        
-        
-        #print(tarapaca)
-
+        AMB()#LLama a la funcion AMB
 
         data.to_csv('precios_bencinas.csv')#guarda los datos en un archivo 
         st.markdown("Esta es una aplicacion web para monitorear precios de combustibles")
