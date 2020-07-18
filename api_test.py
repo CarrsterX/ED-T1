@@ -47,11 +47,24 @@ def load_data(values,api_key):
         data['region'] = data['region'].astype('category')
         data['id_region'] = data['id_region'].astype('category')
     return data
+
+def contador_01(region):
+    aux = 0
+    i = 0
+    while(aux<1):
+        if(region[i] == '01'):
+            i+=1
+        else:
+            aux = 1
+    return i 
+
 def data_01(datos):
-    ##separasion de los datos 
-    ##para implementacion sensilla
+    cant_vencineras = contador_01(datos['id_region'])
+    print(cant_vencineras)
+
     
-    return renew_data
+
+    return 0
 
 
 def main():
@@ -108,8 +121,8 @@ def main():
             pdk.Layer(#las lineas se generan con un inicio y fin 
             "LineLayer",
             data=data[['lat', 'lon']],
-            get_source_position=[-20.25879,-70.13311],
-            get_target_position=[-20.21334,-70.14856],  
+            get_source_position=[-20.25879,-70.13311,0],
+            get_target_position=[-20.21334,-70.14856,0],  
             picking_radius=8,
             get_width=10,
             get_color=255,
