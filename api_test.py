@@ -10,6 +10,7 @@ import matplotlib
 #matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import seaborn as sns
+import networkx as nx
 
 
 def strip_accents(s):
@@ -47,11 +48,6 @@ def load_data(values,api_key):
         data['region'] = data['region'].astype('category')
         data['id_region'] = data['id_region'].astype('category')
     return data
-def data_01(datos):
-    ##separasion de los datos 
-    ##para implementacion sensilla
-    
-    return renew_data
 
 
 def main():
@@ -65,13 +61,11 @@ def main():
     ## Comienzo de las 3 etapas de la pagina
     if data is not None:##consulta si existen datos
         
-        # print(data)
-        # {{observacion}} #
-        ## la variable data que almacena los datos es un diccionario 
-        ## por ende los datos de acceden mediante las llaves
+        tarapaca = pd.read_csv('vr1.csv')
+        tarapaca.set_index(["id"], inplace=True)
+        print(tarapaca)
 
-        renew_data = data_01(data)#funcion feneradora de los datos de la region 01
-        
+
         data.to_csv('precios_bencinas.csv')#guarda los datos en un archivo 
         st.markdown("Esta es una aplicacion web para monitorear precios de combustibles")
 
@@ -108,8 +102,8 @@ def main():
             pdk.Layer(#las lineas se generan con un inicio y fin 
             "LineLayer",
             data=data[['lat', 'lon']],
-            get_source_position=[-20.25879,-70.13311],
-            get_target_position=[-20.21334,-70.14856],  
+            get_source_position=[-20.25879,-70.13311,0],
+            get_target_position=[-20.21334,-70.14856,0],  
             picking_radius=8,
             get_width=10,
             get_color=255,
