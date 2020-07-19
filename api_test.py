@@ -49,10 +49,12 @@ def load_data(values,api_key):
         data['id_region'] = data['id_region'].astype('category')
     return data
 
-
-def grafo(): #Funcion que inicia la creacion del grafo        
+def lectura_01():
     tarapaca = pd.read_csv('vr1.csv')
     tarapaca.set_index(['id'], inplace=True)
+    return tarapaca
+
+def grafo(tarapaca): #Funcion que inicia la creacion del grafo        
     lon = tarapaca['lon']
     lat = tarapaca['lat']
     H = nx.Graph()
@@ -60,7 +62,7 @@ def grafo(): #Funcion que inicia la creacion del grafo
     aux = 1
 
     while(aux<27):
-        H.add_node(aux)
+        H.add_node(aux, pos = (lat[aux-1],lon[aux-1]))
         aux+=1       
         i = 1
         
@@ -73,20 +75,26 @@ def grafo(): #Funcion que inicia la creacion del grafo
                 p2 = (lon[j-1],lat[j-1])
 
                 dist = haversine(p1,p2)
-
                 H.add_edge(i,j, weight = dist)
+
                 j+=1
             i+=1
    
+    print(H.nodes.data())
+    
     T = nx.Graph()
     T = nx.minimum_spanning_tree(H)
-    
     print(list(nx.dijkstra_path(H, source=26, target=1, weight= None)))
     print(H.get_edge_data(1,2))
-    nx.draw(H)
-    plt.show()
-    nx.draw(T)
-    plt.show()
+
+    #nx.draw(T)
+    #plt.show()
+    return H
+
+def conectors_H(H):
+    datosTo_mapa = 1
+
+    return datosTo_mapa
 
 def main():
     api_key='02f23d8e1dd050539725ce70b158e81bf6416cec'
@@ -99,7 +107,13 @@ def main():
     ## Comienzo de las 3 etapas de la pagina
     if data is not None:##consulta si existen datos
         
-        grafo()#LLama a la funcion Grafo
+        tarapaca = lectura_01()
+        H = grafo(tarapaca)#LLama a la funcion Grafo
+        #nx.draw(H)
+        #plt.show()
+
+        datosTo_mapa = conectors_H(H)
+
 
         data.to_csv('precios_bencinas.csv')#guarda los datos en un archivo 
         st.markdown("Esta es una aplicacion web para monitorear precios de combustibles")
@@ -136,9 +150,9 @@ def main():
             ##nuevo layer que permite la generacion de lineas 
             pdk.Layer(#las lineas se generan con un inicio y fin 
             "LineLayer",
-            data=data[['lat', 'lon']],
-            get_source_position=[-20.25879,-70.13311,0],
-            get_target_position=[-20.21334,-70.14856,0],  
+            data = datosTo_mapa,
+            get_source_position="start",
+            get_target_position="end",  
             picking_radius=8,
             get_width=10,
             get_color=255,
