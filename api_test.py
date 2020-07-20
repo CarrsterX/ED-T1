@@ -17,7 +17,6 @@ def strip_accents(s):
     if unicodedata.category(c) != 'Mn')
 
 @st.cache(persist=True)
-
 def load_data(values,api_key):
     response = requests.get('https://api.desarrolladores.energiaabierta.cl/bencina-en-linea/v1/combustibles/vehicular/estaciones.json/?auth_key='+api_key)
     if response.status_code==200:##consulta si obtiene una respuesta de la api
@@ -49,25 +48,29 @@ def load_data(values,api_key):
         data['id_region'] = data['id_region'].astype('category')
     return data
 
-def lectura_01():
-    tarapaca = pd.read_csv('vr1.csv')
-    tarapaca.set_index(['id'], inplace=True)
-    return tarapaca
+def contador_reg01(region):
+    indice_reg = region['id_region']
+    aux = 0
+    for temp in indice_reg:
+        if(temp == '01'):
+            aux+=1
+    return aux    
 
 def grafo(tarapaca): #Funcion que inicia la creacion del grafo        
     lon = tarapaca['lon']
     lat = tarapaca['lat']
+    
+    vencineras = contador_reg01(tarapaca)
     H = nx.Graph()
 
     aux = 1
-
-    while(aux<27):
+    while(aux < vencineras+1):
         H.add_node(aux, pos = [lon[aux-1],lat[aux-1]])
         aux+=1       
         i = 1
-        while(i<26):
+        while(i < vencineras):
             j=i+1
-            while(j<27):
+            while(j < vencineras+1):
                 #administrar datos para obtener peso 
                 p1 = (lon[i-1],lat[i-1])
                 p2 = (lon[j-1],lat[j-1])
@@ -137,8 +140,8 @@ def main():
     ## Comienzo de las 3 etapas de la pagina
     if data is not None:##consulta si existen datos
         
-        tarapaca = lectura_01()
-        H = grafo(tarapaca)#LLama a la funcion Grafo
+        data.to_csv('precios_bencinas.csv')#guarda los datos en un archivo 
+        H = grafo(data)#LLama a la funcion Grafo
         #nx.draw(H)
         #plt.show()
 
@@ -148,8 +151,6 @@ def main():
         
         datosTo_mapa = conectors_H(H)
 
-
-        data.to_csv('precios_bencinas.csv')#guarda los datos en un archivo 
         st.markdown("Esta es una aplicacion web para monitorear precios de combustibles")
 
         option = st.selectbox('Que tipo de combustible desea revisar?',val)#llamada al creador de la casilla de seleccion
@@ -184,7 +185,7 @@ def main():
             ##nuevo layer que permite la generacion de lineas 
             pdk.Layer(#las lineas se generan con un inicio y fin 
             "LineLayer",
-            data = datos_arbol,
+            data = datos_arbol, #si se quiere mostrar el grafo en el mapa, solo debe reemplazar "datos_arbol" por "datosTo_mapa"
             get_source_position = "start",
             get_target_position = "end",  
             picking_radius=8,
