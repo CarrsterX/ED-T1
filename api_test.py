@@ -58,42 +58,57 @@ def grafo(tarapaca): #Funcion que inicia la creacion del grafo
     lon = tarapaca['lon']
     lat = tarapaca['lat']
     H = nx.Graph()
-    
+
     aux = 1
 
     while(aux<27):
-        H.add_node(aux, pos = (lat[aux-1],lon[aux-1]))
+        H.add_node(aux, pos = [lon[aux-1],lat[aux-1]])
         aux+=1       
         i = 1
-        
         while(i<26):
             j=i+1
-            
             while(j<27):
                 #administrar datos para obtener peso 
                 p1 = (lon[i-1],lat[i-1])
                 p2 = (lon[j-1],lat[j-1])
-
                 dist = haversine(p1,p2)
                 H.add_edge(i,j, weight = dist)
 
                 j+=1
             i+=1
    
-    print(H.nodes.data())
-    
-    T = nx.Graph()
-    T = nx.minimum_spanning_tree(H)
-    print(list(nx.dijkstra_path(H, source=26, target=1, weight= None)))
-    print(H.get_edge_data(1,2))
+    #print(H.nodes.data())
+    #print(H.get_edge_data(1,2))
+    #print(list(nx.dijkstra_path(H, source=26, target=1, weight= None)))
 
-    #nx.draw(T)
-    #plt.show()
     return H
 
-def conectors_H(H):
-    datosTo_mapa = 1
+def arbol(H):
+    T = nx.Graph()
+    T = nx.minimum_spanning_tree(H)
 
+    nx.draw(T)
+    plt.show()
+
+    return T
+
+def conectors_H(H):
+    
+    datosTo_mapa = []
+    diccionario = {}
+
+    i = 1
+    while(i<26):
+        j = i+1
+        while(j<27):
+            #generacion del diccionario
+            nodep = H.nodes[i]['pos']
+            nodeh = H.nodes[j]['pos']
+            diccionario = {"start":nodep,"end":nodeh,"name":"" + i.__str__()+"-"+j.__str__()} 
+            datosTo_mapa.append(diccionario)
+            j+=1
+        i+=1
+    #print(datosTo_mapa)
     return datosTo_mapa
 
 def main():
@@ -109,8 +124,10 @@ def main():
         
         tarapaca = lectura_01()
         H = grafo(tarapaca)#LLama a la funcion Grafo
-        #nx.draw(H)
-        #plt.show()
+        nx.draw(H)
+        plt.show()
+
+        arbol(H)
 
         datosTo_mapa = conectors_H(H)
 
@@ -142,7 +159,7 @@ def main():
             data=data[[option, 'lat', 'lon']],##obtiene la longitud y latitud de cada vencinera
             get_position=["lon", "lat"],##situa la generacion en la ubicacion obtenida antes 
             auto_highlight=True,
-            radius=100,##radio del objeto generado
+            radius=20,##radio del objeto generado
             extruded=True,
             pickable=True
             ),
@@ -151,11 +168,11 @@ def main():
             pdk.Layer(#las lineas se generan con un inicio y fin 
             "LineLayer",
             data = datosTo_mapa,
-            get_source_position="start",
-            get_target_position="end",  
+            get_source_position = "start",
+            get_target_position = "end",  
             picking_radius=8,
-            get_width=10,
-            get_color=255,
+            get_width=2,
+            get_color=200,
             highlight_color=[255, 255, 0],
             auto_highlight=True,
             pickable=True, 
