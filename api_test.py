@@ -83,7 +83,7 @@ def grafo(tarapaca): #Funcion que inicia la creacion del grafo
 
     return H
 
-def arbol(H):
+def arbol(H):#genera el arbol
     T = nx.Graph()
     T = nx.minimum_spanning_tree(H)
 
@@ -92,7 +92,7 @@ def arbol(H):
 
     return T
 
-def conectors_H(H):
+def conectors_H(H):#genera los conectores para mostrar el grafo en el mapa
     
     datosTo_mapa = []
     diccionario = {}
@@ -111,7 +111,7 @@ def conectors_H(H):
     #print(datosTo_mapa)
     return datosTo_mapa
 
-def conectorG(arbol):
+def conectorG(arbol):#genera los conectores para mostrar el arbol en el mapa
     
     datos_arbol = []
     diccionario = {}
