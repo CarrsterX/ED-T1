@@ -87,8 +87,8 @@ def arbol(H):
     T = nx.Graph()
     T = nx.minimum_spanning_tree(H)
 
-    nx.draw(T)
-    plt.show()
+    #nx.draw(T)
+    #plt.show()
 
     return T
 
@@ -111,6 +111,21 @@ def conectors_H(H):
     #print(datosTo_mapa)
     return datosTo_mapa
 
+def conectorG(arbol):
+    
+    datos_arbol = []
+    diccionario = {}
+
+    aristas = arbol.edges()
+
+    for aux in aristas:
+        nodep = arbol.nodes[aux[0]]['pos']
+        nodeh = arbol.nodes[aux[1]]['pos']
+        diccionario = {"start":nodep,"end":nodeh,"name":"" + aux[0].__str__()+"-"+aux[1].__str__()} 
+        datos_arbol.append(diccionario)
+
+    return datos_arbol
+
 def main():
     api_key='02f23d8e1dd050539725ce70b158e81bf6416cec'
     val=['gasolina_93','gasolina_97','gasolina_95','petroleo_diesel']
@@ -124,11 +139,13 @@ def main():
         
         tarapaca = lectura_01()
         H = grafo(tarapaca)#LLama a la funcion Grafo
-        nx.draw(H)
-        plt.show()
+        #nx.draw(H)
+        #plt.show()
 
-        arbol(H)
+        T = arbol(H)
 
+        datos_arbol = conectorG(T)
+        
         datosTo_mapa = conectors_H(H)
 
 
@@ -167,16 +184,16 @@ def main():
             ##nuevo layer que permite la generacion de lineas 
             pdk.Layer(#las lineas se generan con un inicio y fin 
             "LineLayer",
-            data = datosTo_mapa,
+            data = datos_arbol,
             get_source_position = "start",
             get_target_position = "end",  
             picking_radius=8,
             get_width=2,
-            get_color=200,
+            get_color=255,
             highlight_color=[255, 255, 0],
             auto_highlight=True,
             pickable=True, 
-            )
+            ),
         ],
         tooltip=True
         )
