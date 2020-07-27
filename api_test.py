@@ -126,8 +126,18 @@ def conectorG(arbol):#genera los conectores para mostrar el arbol en el mapa
         nodeh = arbol.nodes[aux[1]]['pos']
         diccionario = {"start":nodep,"end":nodeh,"name":"" + aux[0].__str__()+"-"+aux[1].__str__()} 
         datos_arbol.append(diccionario)
-
     return datos_arbol
+
+def pesoA(T):
+    peso = 0
+
+    aristas = T.edges()
+
+    for aux in aristas:
+        var = T.get_edge_data(aux[0],aux[1])
+        peso += var['weight'] 
+
+    return peso
 
 def main():
     api_key='02f23d8e1dd050539725ce70b158e81bf6416cec'
@@ -148,6 +158,8 @@ def main():
         T = arbol(H)
 
         datos_arbol = conectorG(T)
+        
+        peso_arbol = pesoA(T)
         
         datosTo_mapa = conectors_H(H)
 
@@ -200,6 +212,7 @@ def main():
         )
         st.write(r)##escribe el mapa con su respectivos objetos en la pagina
         #fin del mapa
+        st.write('El recorrido del arbol representa '+ str(peso_arbol) +'km\n')
 
         ##top de precios (al final de la pagina)
         st.header("Top 5 Precios")
